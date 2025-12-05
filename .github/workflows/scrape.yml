@@ -1,0 +1,43 @@
+name: Run Facebook Scraper
+
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: 'Keyword to search (e.g., Need house)'
+        required: true
+        default: 'Need house'
+      country:
+        description: 'Country Code (e.g., US)'
+        required: true
+        default: 'US'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Scraper
+        env:
+          SEARCH_KEYWORD: ${{ inputs.keyword }}
+          SEARCH_COUNTRY: ${{ inputs.country }}
+        run: npm start
+
+      - name: Upload Results (Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: facebook-leads
+          path: storage/datasets/default/*.json
